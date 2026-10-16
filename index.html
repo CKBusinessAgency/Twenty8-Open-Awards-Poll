@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Twenty8 Open Awards Voting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+/* Layout: one narrow column. Banner on top, then a two-step flow (who are you, then your ballot). Host-only Results tab. */
+:root{
+  --bg:#ffffff; --surface:#F6F2E7; --line:#E0D7C2; --fg:#0B2240; --muted:#5a6577;
+  --green:#006747; --green-ink:#ffffff; --rust:#A3543A; --pink:#FBD5D6; --pink-ink:#7a2f35;
+  --display:"Cormorant Garamond",Georgia,serif; --body:Lato,"Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#08182c; --surface:#102a48; --line:#24405f; --fg:#f1ede3; --muted:#a9b6c8;
+  --green:#3fb488; --green-ink:#04261b; --rust:#e39a7d; --pink:#4a2a35; --pink-ink:#fbd5d6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#08182c; --surface:#102a48; --line:#24405f; --fg:#f1ede3; --muted:#a9b6c8;
+  --green:#3fb488; --green-ink:#04261b; --rust:#e39a7d; --pink:#4a2a35; --pink-ink:#fbd5d6; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;margin:0}
+.wrap{max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+.banner{display:block;width:100%;height:150px;object-fit:cover}
+.bar{height:8px;background:var(--green)}
+header{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:22px 0 8px}
+header img{height:86px;width:auto}
+.eyebrow{font-size:12px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;color:var(--rust)}
+h1{font-family:var(--display);font-weight:600;font-size:38px;line-height:1.05;margin:0;text-wrap:balance}
+.lede{color:var(--muted);margin:4px 0 0;max-width:46ch;text-wrap:balance}
+nav.tabs{display:flex;gap:8px;justify-content:center;margin:14px 0 6px}
+nav.tabs button{font:inherit;font-weight:700;font-size:14px;letter-spacing:.06em;padding:8px 18px;border:1.5px solid var(--line);background:transparent;color:var(--fg);border-radius:999px;cursor:pointer}
+nav.tabs button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+:focus-visible{outline:3px solid var(--rust);outline-offset:2px}
+.step{display:flex;flex-direction:column;gap:14px;margin-top:20px}
+.label{font-size:12px;letter-spacing:.22em;text-transform:uppercase;font-weight:700;color:var(--rust)}
+h2{font-family:var(--display);font-weight:600;font-size:28px;margin:0;line-height:1.1}
+input[type=text]{font:inherit;width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+.names{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;max-height:46vh;overflow:auto;padding:2px}
+.chip{font:inherit;text-align:left;padding:11px 14px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;cursor:pointer;min-width:0;overflow-wrap:anywhere}
+.chip:hover{border-color:var(--green)}
+.chip[aria-checked="true"]{background:var(--green);border-color:var(--green);color:var(--green-ink);font-weight:700}
+.add{border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>input{flex:1 1 140px;min-width:0}
+.btn{font:inherit;font-weight:900;font-size:14px;letter-spacing:.14em;text-transform:uppercase;padding:13px 22px;border:0;border-radius:8px;background:var(--green);color:var(--green-ink);cursor:pointer}
+.btn.alt{background:transparent;color:var(--fg);border:1.5px solid var(--line)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.award{border:1.5px solid var(--line);border-radius:10px;padding:16px;background:var(--bg);display:flex;flex-direction:column;gap:10px}
+.award h3{font-family:var(--display);font-size:25px;font-weight:600;margin:0;line-height:1.1}
+.award p{margin:0;color:var(--muted);font-size:15px}
+.means{background:var(--surface);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.means .label{font-size:11px}
+.means p{color:var(--fg)}
+.who{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--pink);color:var(--pink-ink);padding:10px 14px;border-radius:8px;font-weight:700}
+.who button{font:inherit;font-weight:700;background:none;border:0;color:inherit;text-decoration:underline;cursor:pointer}
+.note{font-size:14px;color:var(--muted)}
+.err{color:var(--pink-ink);background:var(--pink);padding:10px 14px;border-radius:8px;font-weight:700}
+.thanks{text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 8px}
+.res{display:flex;flex-direction:column;gap:6px}
+.tally{display:grid;grid-template-columns:minmax(0,9.5rem) 1fr 2rem;gap:10px;align-items:center;font-size:15px}
+.tally .nm{overflow-wrap:anywhere}
+.track{background:var(--surface);height:14px;border-radius:7px;overflow:hidden}
+.fill{height:100%;background:var(--line)}
+.tally.lead .fill{background:var(--green)}
+.tally.lead .nm{font-weight:900}
+.tally .n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.stats{display:flex;gap:18px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.stats b{font-size:26px;font-family:var(--display);display:block;line-height:1}
+.missing{font-size:14px;color:var(--muted)}
+.hint{font-size:14px;color:var(--muted)}
+.hostbox{display:flex;gap:8px;flex-wrap:wrap;margin-top:28px;padding-top:16px;border-top:1px solid var(--line)}.hostbox input{flex:1 1 160px;min-width:0}.linkbtn{font:inherit;background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:13px;margin-top:28px;padding:0}
+</style>
+</head><body>
+<div class="wrap">
+  <img class="banner" alt="" src="banner.jpg">
+  <div class="bar"></div>
+  <header>
+    <img alt="The Twenty8 Open" src="emblem.png">
+    <div class="eyebrow">The Twenty8 Open · Oct 17, 2026</div>
+    <h1>Vote for the awards</h1>
+    <p class="lede">Pick who deserves each award. One ballot per person, and you can change it until voting closes.</p>
+  </header>
+  <nav class="tabs" id="tabs" hidden>
+    <button id="tab-vote" aria-pressed="true">Vote</button>
+    <button id="tab-res" aria-pressed="false">Results</button>
+  </nav>
+  <main id="app"><p class="note" style="text-align:center">Loading…</p></main>
+  <div id="hostarea"></div>
+</div>
+<script>
+const AWARDS=[
+ {id:"dressed",title:"Best-Dressed On Court",means:"Style on the court: the best outfit, color story and put-together look of the day."},
+ {id:"social",title:"The Social Butterfly",means:"The person who talked to everyone, brought good energy and made the event feel like a community."},
+ {id:"hustler",title:"The Marathon Hustler",means:"Never stopped moving. Ran for every ball, stayed in every point and kept going until the last whistle."},
+ {id:"improved",title:"Most Improved Volleyer",means:"The player whose volleys got noticeably better from the first drill to the last match."},
+ {id:"wall",title:"The Baseline Wall",means:"Steady and consistent from the baseline. Gets everything back and rarely misses."}
+];
+const KEY="t28-voter";
+let names=[],data=null,me=null,picks={},view="vote",submitted=false,q="",msg="",hostKey=null,loaded=false;
+const app=document.getElementById("app");
+const el=(t,a={},...k)=>{const e=document.createElement(t);for(const[x,v]of Object.entries(a)){if(x==="class")e.className=v;else if(x.startsWith("on"))e.addEventListener(x.slice(2),v);else if(v===true)e.setAttribute(x,"");else if(v!==false&&v!=null)e.setAttribute(x,v)}for(const c of k.flat())if(c!=null)e.append(c.nodeType?c:document.createTextNode(c));return e};
+const full=n=>(n.first+" "+n.last).trim();
+const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+const ss={get:k=>{try{return sessionStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{sessionStorage.setItem(k,v)}catch(e){}},del:k=>{try{sessionStorage.removeItem(k)}catch(e){}}};
+async function api(path,opt={}){
+  const r=await fetch(path,{...opt,headers:{"content-type":"application/json",...(opt.headers||{})}});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.error||"Request failed");
+  return j;
+}
+async function loadNames(){try{names=await api("/api/names");loaded=true}catch(e){msg="Could not load the list. Refresh to try again."}}
+async function loadResults(){try{data=await api("/api/results",{headers:{"x-host-key":hostKey}})}catch(e){hostKey=null;ss.del("t28-host");data=null;msg="Wrong passcode."}}
+
+function render(){
+  document.getElementById("tab-vote").setAttribute("aria-pressed",view==="vote");
+  document.getElementById("tab-res").setAttribute("aria-pressed",view==="res");
+  document.getElementById("tabs").hidden=!hostKey;
+  app.replaceChildren();
+  if(view==="res"&&hostKey){renderResults();return}
+  if(!loaded){app.append(msg?el("div",{class:"err"},msg):el("p",{class:"note",style:"text-align:center"},"Loading…"));return}
+  if(!me){renderPick();return}
+  if(submitted){renderThanks();return}
+  renderBallot();
+}
+
+function renderPick(){
+  const search=el("input",{type:"text",id:"search",placeholder:"Search your name",autocomplete:"off","aria-label":"Search your name",value:q});
+  search.addEventListener("input",()=>{q=search.value;list()});
+  const grid=el("div",{class:"names",id:"namegrid"});
+  const first=el("input",{type:"text",id:"addfirst",placeholder:"First name",autocomplete:"off","aria-label":"First name"});
+  const last=el("input",{type:"text",id:"addlast",placeholder:"Last name",autocomplete:"off","aria-label":"Last name"});
+  const add=el("button",{class:"btn alt",id:"addbtn",onclick:async()=>{
+    if(!first.value.trim()){msg="Enter a first name.";render();return}
+    add.disabled=true;
+    try{const n=await api("/api/names",{method:"POST",body:JSON.stringify({first:first.value,last:last.value})});await loadNames();msg="";choose(n.id)}
+    catch(e){msg=e.message;render()}
+  }},"Add my name");
+  app.append(el("div",{class:"step"},
+    el("div",{class:"label"},"Step 1 of 2"),el("h2",{},"Who are you?"),
+    el("p",{class:"note",style:"margin:0"},"Tap your name so your ballot is counted once."),
+    msg?el("div",{class:"err"},msg):null,search,grid,
+    el("div",{class:"add"},el("div",{class:"label"},"Not on the list?"),el("div",{class:"row"},first,last),add)));
+  list();
+  function list(){
+    grid.replaceChildren();
+    const l=names.filter(n=>full(n).toLowerCase().includes(q.toLowerCase())).sort((a,b)=>full(a).localeCompare(full(b)));
+    if(!l.length)grid.append(el("p",{class:"note"},"No match. Add your name below."));
+    for(const n of l)grid.append(el("button",{class:"chip",onclick:()=>choose(n.id)},full(n)));
+  }
+}
+function choose(id){me=id;ls.set(KEY,id);picks={};submitted=ls.get(KEY+"-done")===id;msg="";render()}
+
+function renderBallot(){
+  const mine=names.find(n=>n.id===me);
+  if(!mine){me=null;render();return}
+  const cands=names.filter(n=>n.nominee).sort((a,b)=>full(a).localeCompare(full(b)));
+  const mineAwards=AWARDS.filter(a=>!mine.only||mine.only.includes(a.id));
+  const frag=el("div",{class:"step"},
+    el("div",{class:"who"},el("span",{},"Voting as "+full(mine)),el("button",{onclick:()=>{me=null;submitted=false;render()}},"Not me")),
+    el("div",{class:"label"},"Step 2 of 2"),el("h2",{},"Your ballot"),
+    el("p",{class:"note",style:"margin:0"},"Skip any award you want. You can vote for yourself."));
+  for(const a of mineAwards){
+    const grid=el("div",{class:"names",role:"radiogroup","aria-label":a.title,style:"max-height:none"});
+    for(const n of cands){
+      const b=el("button",{class:"chip",role:"radio","aria-checked":String(picks[a.id]===n.id),onclick:()=>{
+        picks[a.id]=picks[a.id]===n.id?undefined:n.id;
+        for(const c of grid.children)c.setAttribute("aria-checked","false");
+        if(picks[a.id])b.setAttribute("aria-checked","true");
+        count()}},full(n));
+      grid.append(b);
+    }
+    frag.append(el("section",{class:"award"},el("h3",{},a.title),el("div",{class:"means"},el("span",{class:"label"},"What it means"),el("p",{},a.means)),grid));
+  }
+  const c=el("span",{class:"note"});
+  const send=el("button",{class:"btn",id:"send",onclick:async()=>{
+    const chosen={};for(const a of mineAwards)if(picks[a.id])chosen[a.id]=picks[a.id];
+    if(!Object.keys(chosen).length){msg="Pick at least one award before submitting.";render();return}
+    send.disabled=true;
+    try{await api("/api/vote",{method:"POST",body:JSON.stringify({voter:me,picks:chosen})});ls.set(KEY+"-done",me);submitted=true;msg="";render()}
+    catch(e){send.disabled=false;msg=e.message;render()}
+  }},"Submit my votes");
+  frag.append(msg?el("div",{class:"err"},msg):null,el("div",{class:"row",style:"align-items:center"},send,c));
+  app.append(frag);
+  function count(){const n=mineAwards.filter(a=>picks[a.id]).length;c.textContent=n+" of "+mineAwards.length+" picked"}
+  count();
+}
+function renderThanks(){
+  app.append(el("div",{class:"thanks"},el("div",{class:"label"},"Vote received"),el("h2",{},"Thank you!"),
+    el("p",{class:"note",style:"margin:0;max-width:36ch"},"Winners will be announced at the event. Want to change something?"),
+    el("button",{class:"btn alt",onclick:()=>{submitted=false;picks={};render()}},"Change my votes")));
+}
+function renderResults(){
+  if(!data){app.append(el("p",{class:"note"},"Loading results…"));return}
+  const byId=Object.fromEntries(data.names.map(n=>[n.id,n]));
+  const voted=new Set(data.votes.map(v=>v.voter));
+  const out=el("div",{class:"step"},el("div",{class:"label"},"Host only"),el("h2",{},"Live results"),
+    el("div",{class:"stats"},el("div",{},el("b",{},String(data.votes.length)),"ballots in"),el("div",{},el("b",{},String(data.names.length)),"on the list"),
+      el("button",{class:"btn alt",onclick:async()=>{await loadResults();render()}},"Refresh")));
+  for(const a of AWARDS){
+    const t={};for(const b of data.votes){const v=b.picks[a.id];if(v)t[v]=(t[v]||0)+1}
+    const rows=Object.entries(t).sort((x,y)=>y[1]-x[1]);const max=rows.length?rows[0][1]:1;
+    const sec=el("section",{class:"award"},el("h3",{},a.title));
+    if(!rows.length)sec.append(el("p",{},"No votes yet."));
+    const res=el("div",{class:"res"});
+    for(const[id,n]of rows)res.append(el("div",{class:"tally"+(n===max?" lead":"")},el("span",{class:"nm"},byId[id]?full(byId[id]):id),el("div",{class:"track"},el("div",{class:"fill",style:"width:"+Math.round(n/max*100)+"%"})),el("span",{class:"n"},String(n))));
+    sec.append(res);
+    if(rows.length>1&&rows[0][1]===rows[1][1])sec.append(el("p",{class:"hint"},"Tie for first."));
+    out.append(sec);
+  }
+  const not=data.names.filter(n=>!voted.has(n.id)).map(full).sort();
+  out.append(el("p",{class:"missing"},not.length?"Haven't voted yet: "+not.join(", "):"Everyone on the list has voted."));
+  app.append(out);
+}
+function hostUI(){
+  const box=document.getElementById("hostarea");box.replaceChildren();
+  if(hostKey){box.append(el("button",{class:"linkbtn",onclick:()=>{hostKey=null;data=null;view="vote";ss.del("t28-host");hostUI();render()}},"Host sign out"));return}
+  const open=el("button",{class:"linkbtn",onclick:()=>{
+    const i=el("input",{type:"text",id:"hostkey",placeholder:"Host passcode",autocomplete:"off","aria-label":"Host passcode"});
+    const go=el("button",{class:"btn alt",onclick:async()=>{hostKey=i.value.trim();ss.set("t28-host",hostKey);await loadResults();if(hostKey){view="res"}hostUI();render()}},"Show results");
+    box.replaceChildren(el("div",{class:"hostbox"},i,go))}},"Host login");
+  box.append(open);
+}
+document.getElementById("tab-vote").onclick=()=>{view="vote";render()};
+document.getElementById("tab-res").onclick=async()=>{view="res";await loadResults();render()};
+(async()=>{
+  const saved=ls.get(KEY);if(saved){me=saved;submitted=ls.get(KEY+"-done")===saved}
+  await loadNames();
+  const hk=ss.get("t28-host");if(hk){hostKey=hk;await loadResults();if(hostKey)view="res"}
+  hostUI();render();
+})();
+</script>
+</body></html>
